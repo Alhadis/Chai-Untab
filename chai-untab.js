@@ -3,55 +3,40 @@
 const Chai = require("chai");
 
 
-let untab;
 let untabChar = "\t";   // What defines a "tab"
-let untabTrim = false;  // Whether leading/trailing blank lines should be stripped
 let untabPatt = null;   // RegExp that strips leading indentation
 let hooked    = false;  // Whether we've already hooked into Chai's API
 
+/** Pointers to the most recently-assigned properties */
+let lastDepth;
+let lastTrim;
 
 
-/**
- * Remove leading indentation using Chai's current untab- settings.
- *
- * Called automatically, but exposed for external use. If the supplied
- * argument isn't a string, it's returned untouched without further ado.
- *
- * @param {Mixed} input
- * @return {Mixed|String}
- * @public
- */
-function doUntab(input){
+Object.defineProperties(Chai, {
+	doUntab: {value: doUntab},
+	untab: {
+		get(){ return lastDepth },
+		set(depth){
+			if(depth === lastDepth) return;
+			hook(depth, lastTrim);
+		}
+	},
 	
-	/** Not a string? Leave it. */
-	if("[object String]" !== Object.prototype.toString.call(input))
-		return input;
+	untabTrim: {
+		get(){ return lastTrim },
+		set(trim){
+			trim = !!trim;
+			if(trim === lastTrim) return;
+			hook(lastDepth, trim);
+		}
+	},
 	
-	/** Strip leading and trailing lines if told to */
-	if(untabTrim)
-		input = input.replace(/^(?:[\x20\t]*\n)*|(?:\n[\x20\t]*)*$/gi, "");
-	
-	return input.replace(untabPatt, "");
-}
-
-
-/**
- * Prepare unindentation for this suite level.
- *
- * @param {Number} amount
- * @private
- */
-function setPattern(amount){
-	if(amount){
-		untab = amount;
-		untabPatt = new RegExp("^(?:" + untabChar + "){0," + untab + "}", "gm");
+	untabChar: {
+		get(){ return untabChar },
+		set(char){ untabChar = char }
 	}
-	
-	else{
-		untab = null;
-		untabPatt = null;
-	}
-}
+});
+
 
 
 /**
@@ -61,13 +46,67 @@ function setPattern(amount){
  * Intended to work in Mocha, but may also work for any test-runner which
  * uses an API with identically-named callbacks.
  *
- * @param {Number} amount
  * @private
  */
-function hook(amount){
-	beforeEach(() => setPattern(amount));
-	afterEach(()  => setPattern(false));
+function hook(...args){
+	beforeEach(() => setUntab(...args));
+	afterEach(()  => setUntab(false));
 	hookIntoChai();
+}
+
+
+/**
+ * Set unindentation settings for this suite level.
+ *
+ * @param {Number} depth
+ * @param {Boolean} trim
+ * @private
+ */
+function setUntab(depth, trim){
+	
+	/** If this is false, we're undoing existing indentation settings */
+	if(false == depth){
+		lastDepth = null;
+		lastTrim = false;
+	}
+	
+	else{
+		lastDepth = depth;
+		lastTrim = trim;
+	}
+}
+
+
+/**
+ * Remove leading indentation using Chai's current untab- settings.
+ *
+ * Called automatically, but exposed for external use. If the supplied
+ * argument isn't a string, it's returned untouched without further ado.
+ *
+ * Arguments beyond the first are optional: if either depth or trim are
+ * omitted, they default to those set for the current suite level.
+ *
+ * @param {Mixed} input
+ * @param {Number} depth
+ * @param {Boolean} trim
+ * @return {Mixed|String}
+ * @public
+ */
+function doUntab(input, depth = undefined, trim = undefined){
+	
+	/** Not a string? Leave it. */
+	if("[object String]" !== Object.prototype.toString.call(input))
+		return input;
+	
+	if(trim === undefined)  trim  = lastTrim;
+	if(depth === undefined) depth = lastDepth;
+	
+	/** Strip leading and trailing lines if told to */
+	if(trim)
+		input = input.replace(/^(?:[\x20\t]*\n)*|(?:\n[\x20\t]*)*$/gi, "");
+	
+	const untabPatt = new RegExp("^(?:" + untabChar + "){0," + depth + "}", "gm");
+	return input.replace(untabPatt, "");
 }
 
 
@@ -89,19 +128,3 @@ function hookIntoChai(){
 		});
 	}
 }
-
-
-Object.defineProperties(Chai, {
-	
-	untab: {
-		get(){ return untab },
-		set(i){
-			if(i === untab) return;
-			hook(i);
-		}
-	},
-	
-	doUntab: {
-		value: doUntab
-	}
-});
