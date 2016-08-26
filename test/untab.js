@@ -4,11 +4,11 @@ const Chai = require("chai");
 require("../chai-untab.js");
 const {expect} = Chai;
 
-const input = `
+const input = `{
 	A
 	B
 	C
-`;
+}`;
 
 
 describe("Untabbing", () => {
@@ -16,10 +16,13 @@ describe("Untabbing", () => {
 	
 	it("unindents string blocks", () => {
 		expect(input).to.equal(`
+		{
 			A
 			B
 			C
-		`);
+		}
+	
+	`);
 	});
 	
 	
@@ -28,9 +31,11 @@ describe("Untabbing", () => {
 		
 		it("still unindents string blocks", () => {
 			expect(input).to.equal(`
+			{
 				A
 				B
 				C
+			}
 			`);
 		});
 	});

@@ -3,37 +3,36 @@
 const Chai = require("chai");
 
 
+let _depth    = null;   // How many columns to strip
+let _trim     = true;   // Whether to remove leading/trailing blank lines
+
 let untabChar = "\t";   // What defines a "tab"
 let untabPatt = null;   // RegExp that strips leading indentation
 let hooked    = false;  // Whether we've already hooked into Chai's API
-
-/** Pointers to the most recently-assigned properties */
-let lastDepth;
-let lastTrim;
 
 
 Object.defineProperties(Chai, {
 	doUntab: {value: doUntab},
 	untab: {
-		get(){ return lastDepth },
-		set(depth){
-			if(depth === lastDepth) return;
-			hook(depth, lastTrim);
+		get(){ return _depth },
+		set(i){
+			if(i === _depth) return;
+			hook(i, _trim);
 		}
 	},
 	
 	untabTrim: {
-		get(){ return lastTrim },
-		set(trim){
-			trim = !!trim;
-			if(trim === lastTrim) return;
-			hook(lastDepth, trim);
+		get(){ return _trim },
+		set(i){
+			i = !!i;
+			if(i === _trim) return;
+			hook(_depth, _trim);
 		}
 	},
 	
 	untabChar: {
 		get(){ return untabChar },
-		set(char){ untabChar = char }
+		set(i){ untabChar = i }
 	}
 });
 
@@ -50,7 +49,7 @@ Object.defineProperties(Chai, {
  */
 function hook(...args){
 	beforeEach(() => setUntab(...args));
-	afterEach(()  => setUntab(false));
+	afterEach(()  => setUntab(null));
 	hookIntoChai();
 }
 
@@ -64,15 +63,15 @@ function hook(...args){
  */
 function setUntab(depth, trim){
 	
-	/** If this is false, we're undoing existing indentation settings */
-	if(false == depth){
-		lastDepth = null;
-		lastTrim = false;
+	/** Disable untab */
+	if(!depth){
+		_depth = null;
+		_trim = false;
 	}
 	
 	else{
-		lastDepth = depth;
-		lastTrim = trim;
+		_depth = depth;
+		_trim = trim;
 	}
 }
 
@@ -98,8 +97,8 @@ function doUntab(input, depth = undefined, trim = undefined){
 	if("[object String]" !== Object.prototype.toString.call(input))
 		return input;
 	
-	if(trim === undefined)  trim  = lastTrim;
-	if(depth === undefined) depth = lastDepth;
+	if(trim === undefined)  trim  = _trim;
+	if(depth === undefined) depth = _depth;
 	
 	/** Strip leading and trailing lines if told to */
 	if(trim)
