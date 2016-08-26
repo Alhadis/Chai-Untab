@@ -1,6 +1,6 @@
 {
 	"name": "chai-untab",
-	"version": "0.0.0",
+	"version": "1.0.0",
 	"description": "Remove leading indentation from multi-line strings before comparing.",
 	"author": "John Gardner <gardnerjohng@gmail.com>",
 	"keywords": ["multiline", "strings", "untab", "unindent", "outdent", "unindent", "tab"],
