@@ -2,7 +2,12 @@
 	"name": "chai-untab",
 	"version": "0.0.0",
 	"description": "Remove leading indentation from multi-line strings before comparing.",
+	"author": "John Gardner <gardnerjohng@gmail.com>",
+	"keywords": ["multiline", "strings", "untab", "unindent", "outdent", "unindent", "tab"],
+	"repository": "https://github.com/Alhadis/Chai-Untab",
 	"engines": { "node": ">=6.0.0" },
+	"main": "chai-untab.js",
+	"files": ["chai-untab.js"],
 	"peerDependencies": {
 		"chai": "*"
 	},
