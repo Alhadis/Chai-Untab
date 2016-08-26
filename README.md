@@ -87,10 +87,11 @@ Important
   the top of your test would look like this:
 	
 	```js
-	chai.untab = 2;
 	chai.untabChar = "  ";
 	```
 	
+  You only need to set this once, because the setting is global to your project.
+
 * **This only affects strings being checked directly in an assertion.** So, this
   doesn't work:
 
