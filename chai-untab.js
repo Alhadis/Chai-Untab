@@ -9,15 +9,17 @@ let _trim     = true;   // Whether to remove leading/trailing blank lines
 let untabChar = "\t";   // What defines a "tab"
 let untabPatt = null;   // RegExp that strips leading indentation
 let hooked    = false;  // Whether we've already hooked into Chai's API
+let started   = false;  // Whether tests have actually started executing
 
 
 Object.defineProperties(Chai, {
-	doUntab: {value: doUntab},
+	doUntab: { value: doUntab },
 	untab: {
 		get(){ return _depth },
 		set(i){
 			if(i === _depth) return;
-			hook(i, _trim);
+			if(started) _depth = i;
+			else hook(i, _trim);
 		}
 	},
 	
@@ -26,7 +28,8 @@ Object.defineProperties(Chai, {
 		set(i){
 			i = !!i;
 			if(i === _trim) return;
-			hook(_depth, _trim);
+			if(started) _depth = i;
+			else hook(_depth, _trim);
 		}
 	},
 	
@@ -62,6 +65,7 @@ function hook(...args){
  * @private
  */
 function setUntab(depth, trim){
+	started = true;
 	
 	/** Disable untab */
 	if(!depth){
