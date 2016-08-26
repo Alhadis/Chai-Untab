@@ -5,6 +5,7 @@
 	"author": "John Gardner <gardnerjohng@gmail.com>",
 	"keywords": ["multiline", "strings", "untab", "unindent", "outdent", "unindent", "tab"],
 	"repository": "https://github.com/Alhadis/Chai-Untab",
+	"license": "ISC",
 	"engines": { "node": ">=6.0.0" },
 	"main": "chai-untab.js",
 	"files": ["chai-untab.js"],
